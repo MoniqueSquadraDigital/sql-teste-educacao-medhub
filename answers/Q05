@@ -1,0 +1,44 @@
+/* ==============================================================
+   Q05 – Crescimento de inscrições (janela móvel de 3 meses)
+   1. Para cada mês calendário (YYYY-MM), conte inscrições.
+   2. Calcule a soma móvel de 3 meses (mês atual + 2 anteriores) → rolling_3m.
+   3. Calcule a variação % em relação à janela anterior.
+   Retorne: ano_mes · inscricoes_mes · rolling_3m · variacao_pct
+=================================================================*/
+
+WITH inscricoes_mensais AS (
+    SELECT
+        FORMAT(data_inscricao, 'yyyy-MM') AS ano_mes,
+        COUNT(*) AS inscricoes_mes
+    FROM dbo.inscricoes
+    GROUP BY FORMAT(data_inscricao, 'yyyy-MM')
+),
+inscricoes_com_rolling AS (
+    SELECT
+        ano_mes,
+        inscricoes_mes,
+        SUM(inscricoes_mes) OVER (
+            ORDER BY ano_mes
+            ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+        ) AS rolling_3m
+    FROM inscricoes_mensais
+),
+com_variacao AS (
+    SELECT
+        ano_mes,
+        inscricoes_mes,
+        rolling_3m,
+        LAG(rolling_3m) OVER (ORDER BY ano_mes) AS rolling_3m_anterior
+    FROM inscricoes_com_rolling
+)
+SELECT
+    ano_mes,
+    inscricoes_mes,
+    rolling_3m,
+    CASE 
+        WHEN rolling_3m_anterior IS NULL THEN NULL
+        WHEN rolling_3m_anterior = 0 THEN NULL
+        ELSE CAST(ROUND(((rolling_3m - rolling_3m_anterior) * 100.0) / rolling_3m_anterior, 2) AS DECIMAL(10,2))
+    END AS variacao_pct
+FROM com_variacao
+ORDER BY ano_mes;

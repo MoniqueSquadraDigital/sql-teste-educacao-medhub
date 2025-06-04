@@ -1,0 +1,32 @@
+/* ==============================================================
+   Q03 – Tempo médio (dias) para concluir cada **nível** de curso
+   Definições:
+     • Início = data_insc   (tabela inscricoes)
+     • Fim    = maior data em progresso onde porcentagem = 100
+   Calcule a média de dias entre início e fim,
+   agrupando por cursos.nivel (ex.: Básico, Avançado).
+=================================================================*/
+
+WITH conclusoes AS (
+    SELECT
+        i.id_aluno,
+        i.id_curso,
+        i.[data_inscricao] AS data_inscricao,
+        MAX(p.data_ultima_atividade) AS data_conclusao
+    FROM dbo.inscricoes i
+    JOIN dbo.progresso p ON i.id_aluno = p.id_aluno
+    WHERE p.percentual = 100
+    GROUP BY i.id_aluno, i.id_curso, i.[data_inscricao]
+),
+duracoes AS (
+    SELECT
+        c.nivel,
+        DATEDIFF(DAY, cns.data_inscricao, cns.data_conclusao) AS dias_para_concluir
+    FROM conclusoes cns
+    JOIN dbo.cursos c ON cns.id_curso = c.id_curso
+)
+SELECT
+    nivel,
+    AVG(CAST(dias_para_concluir AS FLOAT)) AS media_dias_conclusao
+FROM duracoes
+GROUP BY nivel;

@@ -1,0 +1,20 @@
+/* ==============================================================
+   Q02 – Taxa de conclusão por curso
+   Para cada curso, calcule:
+     • total_inscritos
+     • total_concluidos   (status = 'concluída')
+     • taxa_conclusao (%) = concluídos / inscritos * 100
+   Ordene descendentemente pela taxa de conclusão.
+=================================================================*/
+
+SELECT 
+    c.id_curso,
+    c.nome,
+    COUNT(i.id_aluno) AS total_inscritos,
+    COUNT(CASE WHEN i.status = 'concluido' THEN 1 END) AS total_concluidos,
+    CAST(ROUND((COUNT(CASE WHEN i.status = 'concluido' THEN 1 END) * 100.0) / COUNT(i.id_aluno), 2) AS DECIMAL(5,2)) AS taxa_conclusao_pct
+FROM dbo.cursos c
+INNER JOIN dbo.inscricoes i ON c.id_curso = i.id_curso  -- Ajuste o nome conforme necessário
+GROUP BY c.id_curso, c.nome
+ORDER BY taxa_conclusao_pct DESC;
+
