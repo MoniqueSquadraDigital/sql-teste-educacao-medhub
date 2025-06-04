@@ -4,7 +4,15 @@
 =================================================================*/
 -- SUA QUERY AQUI
 
-
+SELECT TOP 5
+    c.id_curso,
+    c.nome,
+    COUNT(i.id_aluno) AS total_inscritos
+FROM dbo.cursos c
+INNER JOIN dbo.id_inscricao i ON c.id_curso = i.id_curso
+WHERE i.status = 'ativo'  -- Assumindo que 'ativo' é o valor para inscrições ativas
+GROUP BY c.id_curso, c.nome
+ORDER BY COUNT(i.id_aluno) DESC;
 
 /* ==============================================================
    Q02 – Taxa de conclusão por curso
@@ -16,7 +24,16 @@
 =================================================================*/
 -- SUA QUERY AQUI
 
-
+SELECT 
+    c.id_curso,
+    c.nome,
+    COUNT(i.id_aluno) AS total_inscritos,
+    COUNT(CASE WHEN i.status = 'concluido' THEN 1 END) AS total_concluidos,
+    CAST(ROUND((COUNT(CASE WHEN i.status = 'concluido' THEN 1 END) * 100.0) / COUNT(i.id_aluno), 2) AS DECIMAL(5,2)) AS taxa_conclusao_pct
+FROM dbo.cursos c
+INNER JOIN dbo.inscricoes i ON c.id_curso = i.id_curso  -- Ajuste o nome conforme necessário
+GROUP BY c.id_curso, c.nome
+ORDER BY taxa_conclusao_pct DESC;
 
 /* ==============================================================
    Q03 – Tempo médio (dias) para concluir cada **nível** de curso
@@ -49,3 +66,42 @@
    Retorne: ano_mes · inscricoes_mes · rolling_3m · variacao_pct
 =================================================================*/
 -- SUA QUERY AQUI
+
+WITH inscricoes_mensais AS (
+    SELECT
+        FORMAT(data_inscricao, 'yyyy-MM') AS ano_mes,
+        COUNT(*) AS inscricoes_mes
+    FROM dbo.inscricoes
+    GROUP BY FORMAT(data_inscricao, 'yyyy-MM')
+),
+inscricoes_com_rolling AS (
+    SELECT
+        ano_mes,
+        inscricoes_mes,
+        SUM(inscricoes_mes) OVER (
+            ORDER BY ano_mes
+            ROWS BETWEEN 2 PRECEDING AND CURRENT ROW
+        ) AS rolling_3m
+    FROM inscricoes_mensais
+),
+com_variacao AS (
+    SELECT
+        ano_mes,
+        inscricoes_mes,
+        rolling_3m,
+        LAG(rolling_3m) OVER (ORDER BY ano_mes) AS rolling_3m_anterior
+    FROM inscricoes_com_rolling
+)
+SELECT
+    ano_mes,
+    inscricoes_mes,
+    rolling_3m,
+    CASE 
+        WHEN rolling_3m_anterior IS NULL THEN NULL
+        WHEN rolling_3m_anterior = 0 THEN NULL
+        ELSE CAST(ROUND(((rolling_3m - rolling_3m_anterior) * 100.0) / rolling_3m_anterior, 2) AS DECIMAL(10,2))
+    END AS variacao_pct
+FROM com_variacao
+ORDER BY ano_mes;
+
+
