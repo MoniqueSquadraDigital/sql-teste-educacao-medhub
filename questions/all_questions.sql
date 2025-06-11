@@ -4,8 +4,6 @@
 =================================================================*/
 -- SUA QUERY AQUI
 
-
-
 /* ==============================================================
    Q02 – Taxa de conclusão por curso
    Para cada curso, calcule:
@@ -15,8 +13,6 @@
    Ordene descendentemente pela taxa de conclusão.
 =================================================================*/
 -- SUA QUERY AQUI
-
-
 
 /* ==============================================================
    Q03 – Tempo médio (dias) para concluir cada **nível** de curso
@@ -28,8 +24,6 @@
 =================================================================*/
 -- SUA QUERY AQUI
 
-
-
 /* ==============================================================
    Q04 – TOP 10 módulos com maior **taxa de abandono**
    - Considere abandono quando porcentagem < 20 %
@@ -39,8 +33,6 @@
 =================================================================*/
 -- SUA QUERY AQUI
 
-
-
 /* ==============================================================
    Q05 – Crescimento de inscrições (janela móvel de 3 meses)
    1. Para cada mês calendário (YYYY-MM), conte inscrições.
@@ -49,3 +41,4 @@
    Retorne: ano_mes · inscricoes_mes · rolling_3m · variacao_pct
 =================================================================*/
 -- SUA QUERY AQUI
+

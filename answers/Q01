@@ -1,0 +1,14 @@
+/* ==============================================================
+   Q01 – TOP 5 cursos com mais inscrições **ativas**
+   Retorne: id_curso · nome · total_inscritos
+=================================================================*/
+SELECT TOP 5
+    c.id_curso,
+    c.nome,
+    COUNT(i.id_aluno) AS total_inscritos
+FROM dbo.cursos c
+INNER JOIN dbo.id_inscricao i ON c.id_curso = i.id_curso
+WHERE i.status = 'ativo'  -- Assumindo que 'ativo' é o valor para inscrições ativas
+GROUP BY c.id_curso, c.nome
+ORDER BY COUNT(i.id_aluno) DESC;
+
